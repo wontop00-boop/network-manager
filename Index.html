@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인맥관리 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1c2e;
+    --navy-mid: #1a2f4a;
+    --navy-light: #243d5c;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f5f0e8;
+    --cream-mid: #ede5d4;
+    --text-dark: #0f1c2e;
+    --text-mid: #3a4f6a;
+    --text-light: #6b7f95;
+    --red: #c0392b;
+    --green: #27ae60;
+    --shadow: 0 4px 24px rgba(15,28,46,0.12);
+    --shadow-lg: 0 12px 48px rgba(15,28,46,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .sidebar-logo h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+  .sidebar-logo p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .sidebar-nav { flex: 1; padding: 16px 0; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .nav-item.active {
+    color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    border-left-color: var(--gold);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--cream-mid);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(15,28,46,0.06);
+  }
+  .topbar-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text-mid);
+    border: 1px solid var(--cream-mid);
+  }
+  .btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+  .btn-danger {
+    background: var(--red);
+    color: white;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    background: white;
+    border: 1px solid var(--cream-mid);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text-dark);
+  }
+  .search-bar input::placeholder { color: var(--text-light); }
+  .filter-chips { display: flex; gap: 8px; }
+  .chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid var(--cream-mid);
+    background: var(--cream);
+    color: var(--text-mid);
+    transition: all 0.2s;
+  }
+  .chip.active {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border-top: 3px solid var(--gold);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .stat-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+  /* ── CONTACTS GRID ── */
+  .contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .contact-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.25s;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--gold);
+  }
+
+  .card-importance {
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px;
+    height: 100%;
+  }
+  .imp-high { background: var(--red); }
+  .imp-mid { background: var(--gold); }
+  .imp-low { background: var(--text-light); }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .avatar-navy { background: var(--navy); color: var(--gold); }
+  .avatar-gold { background: var(--gold); color: var(--navy); }
+  .avatar-mid { background: var(--navy-mid); color: white; }
+
+  .card-info h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .card-info .role {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--cream);
+    color: var(--text-mid);
+    border: 1px solid var(--cream-mid);
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--cream);
+    padding-top: 12px;
+  }
+  .last-contact { font-size: 11px; color: var(--text-light); }
+  .action-btns { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--cream-mid);
+    background: var(--cream);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── HISTORY TABLE ── */
+  .history-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .table-header {
+    display: grid;
+    grid-template-columns: 160px 1fr 120px 100px 80px;
+    padding: 12px 20px;
+    background: var(--navy);
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 120px 100px 80px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--cream);
+    align-items: center;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .table-row:hover { background: var(--cream); }
+  .table-row:last-child { border-bottom: none; }
+
+  /* ── FOLLOWUP SECTION ── */
+  .followup-list { display: flex; flex-direction: column; gap: 12px; }
+  .followup-item {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-left: 4px solid var(--gold);
+    transition: all 0.2s;
+  }
+  .followup-item:hover { transform: translateX(4px); }
+  .followup-item.overdue { border-left-color: var(--red); }
+  .followup-item.done { border-left-color: var(--green); opacity: 0.6; }
+  .followup-content { flex: 1; }
+  .followup-content h4 { font-size: 14px; font-weight: 500; color: var(--navy); }
+  .followup-content p { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+  .followup-date { font-size: 12px; color: var(--text-mid); white-space: nowrap; }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-red { background: #fdecea; color: var(--red); }
+  .badge-gold { background: #fef9ec; color: #b8860b; }
+  .badge-green { background: #eafaf1; color: var(--green); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,28,46,0.55);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 14px;
+    width: 560px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--cream-mid);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    color: var(--navy);
+  }
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--cream);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--navy); color: white; }
+  .modal-body { padding: 20px 28px; }
+  .modal-footer {
+    padding: 16px 28px 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--cream-mid);
+    border-radius: 7px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text-dark);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--navy);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 420px;
+    background: white;
+    box-shadow: -8px 0 40px rgba(15,28,46,0.15);
+    z-index: 150;
+    overflow-y: auto;
+    animation: slideInRight 0.25s ease;
+  }
+  .detail-panel.open { display: block; }
+  @keyframes slideInRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .detail-header {
+    background: var(--navy);
+    padding: 28px 24px 24px;
+    color: white;
+  }
+  .detail-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .detail-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .detail-name { font-family: 'Noto Serif KR', serif; font-size: 20px; }
+  .detail-role { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+  .detail-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .detail-close:hover { background: rgba(255,255,255,0.2); }
+  .detail-actions { display: flex; gap: 8px; }
+  .detail-body { padding: 20px 24px; }
+  .detail-section { margin-bottom: 24px; }
+  .detail-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 13px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--text-light); }
+  .detail-val { color: var(--text-dark); font-weight: 500; text-align: right; }
+  .history-mini { font-size: 12px; }
+  .history-entry {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cream);
+    display: flex;
+    gap: 10px;
+  }
+  .history-entry:last-child { border-bottom: none; }
+  .h-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .h-date { color: var(--text-light); margin-top: 2px; }
+  .h-text { color: var(--text-dark); }
+  .memo-box {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+  }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1>인맥관리</h1>
+    <p>RELATIONSHIP MANAGER</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="showSection('contacts')">
+      <span class="icon">👤</span> 인맥 목록
+    </div>
+    <div class="nav-item" onclick="showSection('history')">
+      <span class="icon">📋</span> 대화 이력
+    </div>
+    <div class="nav-item" onclick="showSection('followup')">
+      <span class="icon">🔔</span> 팔로업 일정
+    </div>
+  </div>
+  <div class="sidebar-footer">v1.0 · 데이터 브라우저 저장</div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">인맥 목록</div>
+    <div class="topbar-right">
+      <button class="btn btn-gold" onclick="openAddModal()">＋ 연락처 추가</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- CONTACTS SECTION -->
+    <div id="section-contacts" class="section active">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="search-input" placeholder="이름, 기관, 직책으로 검색..." oninput="renderContacts()">
+        <div class="filter-chips">
+          <div class="chip active" data-filter="all" onclick="setFilter(this,'all')">전체</div>
+          <div class="chip" data-filter="금융당국" onclick="setFilter(this,'금융당국')">금융당국</div>
+          <div class="chip" data-filter="금융기관" onclick="setFilter(this,'금융기관')">금융기관</div>
+          <div class="chip" data-filter="관계사" onclick="setFilter(this,'관계사')">관계사</div>
+          <div class="chip" data-filter="기타" onclick="setFilter(this,'기타')">기타</div>
+        </div>
+      </div>
+      <div class="contacts-grid" id="contacts-grid"></div>
+    </div>
+
+    <!-- HISTORY SECTION -->
+    <div id="section-history" class="section">
+      <div class="history-table">
+        <div class="table-header">
+          <span>일자</span>
+          <span>내용</span>
+          <span>대상</span>
+          <span>유형</span>
+          <span>관리</span>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <!-- FOLLOWUP SECTION -->
+    <div id="section-followup" class="section">
+      <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;">
+        <button class="btn btn-primary" onclick="openFollowupModal()">＋ 팔로업 추가</button>
+        <div style="flex:1"></div>
+        <span style="font-size:13px;color:var(--text-light)">팔로업 일정을 관리하세요</span>
+      </div>
+      <div class="followup-list" id="followup-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-header">
+    <div class="detail-top">
+      <div class="detail-avatar" id="detail-avatar"></div>
+      <div>
+        <div class="detail-name" id="detail-name"></div>
+        <div class="detail-role" id="detail-role"></div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-gold" onclick="openLogModal(currentDetail)" style="font-size:12px;padding:7px 14px;">📝 대화 기록</button>
+      <button class="btn btn-outline" onclick="openEditModal(currentDetail)" style="font-size:12px;padding:7px 14px;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2);">✏️ 수정</button>
+    </div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- ADD/EDIT CONTACT MODAL -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">연락처 추가</h2>
+      <button class="modal-close" onclick="closeModal('contact-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">이름 *</label>
+          <input class="form-input" id="f-name" placeholder="홍길동">
+        </div>
+        <div class="form-group">
+          <label class="form-label">직책 *</label>
+          <input class="form-input" id="f-role" placeholder="국장, 팀장 등">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">기관/회사 *</label>
+          <input class="form-input" id="f-org" placeholder="금융위원회">
+        </div>
+        <div class="form-group">
+          <label class="form-label">분류</label>
+          <select class="form-select" id="f-category">
+            <option>금융당국</option>
+            <option>금융기관</option>
+            <option>관계사</option>
+            <option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">연락처</label>
+          <input class="form-input" id="f-phone" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">이메일</label>
+          <input class="form-input" id="f-email" placeholder="example@domain.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">관계 친밀도</label>
+          <select class="form-select" id="f-importance">
+            <option value="high">★★★ 핵심 인맥</option>
+            <option value="mid">★★ 주요 인맥</option>
+            <option value="low">★ 일반 인맥</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">접근 방식</label>
+          <input class="form-input" id="f-approach" placeholder="골프, 식사, 동호회 등">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">개인 관심사 / 성향</label>
+        <input class="form-input" id="f-interest" placeholder="등산, 야구팬, 와인 등">
+      </div>
+      <div class="form-group">
+        <label class="form-label">특이사항 / 메모</label>
+        <textarea class="form-textarea" id="f-memo" placeholder="출신, 학연, 지연, 특이사항 등 개인 친분에 참고할 내용"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('contact-modal')">취소</button>
+      <button class="btn btn-primary" onclick="saveContact()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>대화 기록 추가</h2>
+      <button class="modal-close" onclick="closeModal('log-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">대상</label>
+        <input class="form-input" id="l-name" readonly>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">일자</label>
+          <input class="form-input" type="date" id="l-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">유형</label>
+          <select class="form-select" id="l-type">
+            <option>식사/접대</option>
+            <option>전화</option>
+            <option>미팅</option>
+            <option>골프</option>
+            <option>행사</option>
+            <option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">주요 내용</label>
+        <textarea class="form-textarea" id="l-content" placeholder="주요 대화 내용, 현안, 분위기 등"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('log-modal')">취소</button>
+      <button class="btn btn-primary" onclick="saveLog()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOLLOWUP MODAL -->
+<div class="modal-overlay" id="followup-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>팔로업 일정 추가</h2>
+      <button class="modal-close" onclick="closeModal('followup-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">대상 인맥</label>
+        <select class="form-select" id="fu-contact">
+          <option value="">선택하세요</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">예정일</label>
+          <input class="form-input" type="date" id="fu-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">방식</label>
+          <select class="form-select" id="fu-type">
+            <option>식사 제안</option>
+            <option>전화 연락</option>
+            <option>골프 약속</option>
+            <option>행사 초대</option>
+            <option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">목적 / 메모</label>
+        <textarea class="form-textarea" id="fu-memo" placeholder="어떤 목적으로 만날지, 사전 준비사항 등"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('followup-modal')">취소</button>
+      <button class="btn btn-primary" onclick="saveFollowup()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───
+let contacts = JSON.parse(localStorage.getItem('nm_contacts') || '[]');
+let logs = JSON.parse(localStorage.getItem('nm_logs') || '[]');
+let followups = JSON.parse(localStorage.getItem('nm_followups') || '[]');
+let editId = null;
+let logTargetId = null;
+let currentDetail = null;
+let activeFilter = 'all';
+
+function save() {
+  localStorage.setItem('nm_contacts', JSON.stringify(contacts));
+  localStorage.setItem('nm_logs', JSON.stringify(logs));
+  localStorage.setItem('nm_followups', JSON.stringify(followups));
+}
+
+// ─── SAMPLE DATA ───
+if (contacts.length === 0) {
+  contacts = [
+    { id: 1, name: '김재원', role: '금융정책국장', org: '금융위원회', category: '금융당국', phone: '010-1234-5678', email: 'jwkim@fsc.go.kr', importance: 'high', approach: '골프, 고급 식사', interest: '골프, 와인', memo: 'SKY 출신. 매년 봄 골프모임 참여. 신중한 성격이나 개인 취향에 맞는 접근 시 호의적.' },
+    { id: 2, name: '박성민', role: '검사역', org: '금융감독원', category: '금융당국', phone: '010-2345-6789', email: 'smpark@fss.or.kr', importance: 'high', approach: '식사, 전화', interest: '야구(두산팬), 등산', memo: '두산 팬. 시즌 중 야구 초대 효과적. 꼼꼼한 성격, 사전 브리핑 선호.' },
+    { id: 3, name: '이지현', role: '팀장', org: '한국은행', category: '금융당국', phone: '010-3456-7890', email: 'jhlee@bok.or.kr', importance: 'mid', approach: '런치 미팅', interest: '독서, 클래식', memo: '정기 조찬 모임 멤버. 데이터 기반 대화 선호. 정책 현안 공유 시 호응.' },
+    { id: 4, name: '최도현', role: '부행장', org: 'KB국민은행', category: '금융기관', phone: '010-4567-8901', email: 'dhchoi@kbfg.com', importance: 'mid', approach: '격월 식사', interest: '골프, 클래식카', memo: '업계 네트워크 폭넓음. 소개 채널로 활용 가능. 격식 있는 만남 선호.' },
+    { id: 5, name: '윤서현', role: '이사', org: '우리금융지주', category: '금융기관', phone: '010-5678-9012', email: 'shyoon@wooribank.com', importance: 'low', approach: '행사 동반', interest: '테니스, 여행', memo: '동창 소개 인맥. 비공식 행사 참여 선호. 가벼운 관계 유지.' },
+  ];
+  logs = [
+    { id: 1, contactId: 1, date: '2025-03-15', type: '골프', content: '한강CC 라운드. 금융규제 완화 관련 비공식 의견 청취. 분위기 우호적.' },
+    { id: 2, contactId: 2, date: '2025-03-28', type: '식사/접대', content: '종로 한식당 저녁. 현안 검사 일정 관련 정보 공유. 야구 이야기로 마무리.' },
+    { id: 3, contactId: 1, date: '2025-04-10', type: '전화', content: '정책 개정안 관련 30분 통화. 추가 자료 요청 있었음.' },
+    { id: 4, contactId: 3, date: '2025-04-01', type: '미팅', content: '조찬 모임에서 접촉. 금리 정책 방향 관련 비공개 입장 청취.' },
+  ];
+  followups = [
+    { id: 1, contactId: 1, date: '2025-05-10', type: '골프 약속', memo: '봄 골프 시즌. 규제 샌드박스 관련 의견 청취 목적.', done: false },
+    { id: 2, contactId: 2, date: '2025-04-30', type: '식사 제안', memo: '두산 경기 전날 저녁 제안. 검사 일정 관련 사전 조율.', done: false },
+    { id: 3, contactId: 3, date: '2025-03-20', type: '전화 연락', memo: '조찬 모임 일정 확인 전화.', done: true },
+  ];
+  save();
+}
+
+// ─── NAV ───
+function showSection(s) {
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-' + s).classList.add('active');
+  const titles = { contacts:'인맥 목록', history:'대화 이력', followup:'팔로업 일정' };
+  document.getElementById('page-title').textContent = titles[s];
+  event.currentTarget.classList.add('active');
+  if (s === 'contacts') renderContacts();
+  if (s === 'history') renderHistory();
+  if (s === 'followup') renderFollowup();
+  closeDetail();
+}
+
+// ─── STATS ───
+function renderStats() {
+  const total = contacts.length;
+  const high = contacts.filter(c => c.importance === 'high').length;
+  const today = new Date().toISOString().split('T')[0];
+  const pending = followups.filter(f => !f.done && f.date >= today).length;
+  const thisMonth = logs.filter(l => l.date.startsWith(new Date().toISOString().slice(0,7))).length;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-label">전체 인맥</div><div class="stat-value">${total}</div><div class="stat-sub">등록된 연락처</div></div>
+    <div class="stat-card"><div class="stat-label">핵심 인맥</div><div class="stat-value">${high}</div><div class="stat-sub">최우선 관리 대상</div></div>
+    <div class="stat-card"><div class="stat-label">이번달 접촉</div><div class="stat-value">${thisMonth}</div><div class="stat-sub">대화 기록 건수</div></div>
+    <div class="stat-card"><div class="stat-label">예정 팔로업</div><div class="stat-value">${pending}</div><div class="stat-sub">향후 일정</div></div>
+  `;
+}
+
+// ─── CONTACTS ───
+function setFilter(el, val) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = val;
+  renderContacts();
+}
+
+function getLastContact(id) {
+  const ls = logs.filter(l => l.contactId === id).sort((a,b) => b.date.localeCompare(a.date));
+  if (!ls.length) return '기록 없음';
+  return ls[0].date;
+}
+
+function impLabel(v) {
+  return v === 'high' ? '핵심' : v === 'mid' ? '주요' : '일반';
+}
+
+function avatarColor(i) {
+  const colors = ['avatar-navy','avatar-gold','avatar-mid'];
+  return colors[i % 3];
+}
+
+function renderContacts() {
+  renderStats();
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let list = contacts.filter(c => {
+    const match = (c.name+c.org+c.role+c.category).toLowerCase().includes(q);
+    const cat = activeFilter === 'all' || c.category === activeFilter;
+    return match && cat;
+  });
+
+  const grid = document.getElementById('contacts-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>검색 결과가 없습니다</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map((c, i) => `
+    <div class="contact-card" onclick="openDetail(${c.id})">
+      <div class="card-importance imp-${c.importance}"></div>
+      <div class="card-top">
+        <div class="avatar ${avatarColor(i)}">${c.name[0]}</div>
+        <div class="card-info">
+          <h3>${c.name}</h3>
+          <div class="role">${c.role} · ${c.org}</div>
+        </div>
+      </div>
+      <div class="card-tags">
+        <span class="tag">${c.category}</span>
+        <span class="tag">${impLabel(c.importance)}</span>
+        ${c.approach ? `<span class="tag">${c.approach.split(',')[0].trim()}</span>` : ''}
+      </div>
+      <div class="card-meta">
+        <span class="last-contact">최근 접촉: ${getLastContact(c.id)}</span>
+        <div class="action-btns" onclick="event.stopPropagation()">
+          <div class="icon-btn" onclick="openLogModal(${c.id})" title="대화 기록">📝</div>
+          <div class="icon-btn" onclick="openEditModal(${c.id})" title="수정">✏️</div>
+          <div class="icon-btn" onclick="deleteContact(${c.id})" title="삭제">🗑</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── HISTORY ───
+function renderHistory() {
+  const sorted = [...logs].sort((a,b) => b.date.localeCompare(a.date));
+  const list = document.getElementById('history-list');
+  if (!sorted.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>대화 기록이 없습니다</p></div>';
+    return;
+  }
+  list.innerHTML = sorted.map(l => {
+    const c = contacts.find(x => x.id === l.contactId);
+    return `
+    <div class="table-row">
+      <span>${l.date}</span>
+      <span style="color:var(--text-mid)">${l.content}</span>
+      <span>${c ? c.name + ' (' + c.org + ')' : '(삭제됨)'}</span>
+      <span><span class="tag">${l.type}</span></span>
+      <span><button class="btn btn-danger" onclick="deleteLog(${l.id})">삭제</button></span>
+    </div>`;
+  }).join('');
+}
+
+// ─── FOLLOWUP ───
+function renderFollowup() {
+  const sel = document.getElementById('fu-contact');
+  sel.innerHTML = '<option value="">선택하세요</option>' + contacts.map(c => `<option value="${c.id}">${c.name} (${c.org})</option>`).join('');
+
+  const today = new Date().toISOString().split('T')[0];
+  const sorted = [...followups].sort((a,b) => a.date.localeCompare(b.date));
+  const list = document.getElementById('followup-list');
+  if (!sorted.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><p>팔로업 일정이 없습니다</p></div>';
+    return;
+  }
+  list.innerHTML = sorted.map(f => {
+    const c = contacts.find(x => x.id === f.contactId);
+    const overdue = !f.done && f.date < today;
+    const cls = f.done ? 'done' : overdue ? 'overdue' : '';
+    const badge = f.done ? `<span class="badge badge-green">완료</span>` : overdue ? `<span class="badge badge-red">지연</span>` : `<span class="badge badge-gold">예정</span>`;
+    return `
+    <div class="followup-item ${cls}">
+      <div style="font-size:22px">${f.type.includes('골프') ? '⛳' : f.type.includes('식사') ? '🍽' : f.type.includes('전화') ? '📞' : '📅'}</div>
+      <div class="followup-content">
+        <h4>${c ? c.name + ' · ' + c.org : '(삭제됨)'} — ${f.type}</h4>
+        <p>${f.memo || ''}</p>
+      </div>
+      <span class="followup-date">${f.date}</span>
+      ${badge}
+      ${!f.done ? `<button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="doneFollowup(${f.id})">완료</button>` : ''}
+      <button class="btn btn-danger" onclick="deleteFollowup(${f.id})">삭제</button>
+    </div>`;
+  }).join('');
+}
+
+// ─── DETAIL ───
+function openDetail(id) {
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  currentDetail = id;
+  document.getElementById('detail-avatar').textContent = c.name[0];
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-role').textContent = c.role + ' · ' + c.org;
+  const cls = { high:'imp-high', mid:'imp-mid', low:'imp-low' };
+
+  const myLogs = logs.filter(l => l.contactId === id).sort((a,b) => b.date.localeCompare(a.date)).slice(0,5);
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">기본 정보</div>
+      <div class="detail-row"><span class="detail-key">분류</span><span class="detail-val">${c.category}</span></div>
+      <div class="detail-row"><span class="detail-key">친밀도</span><span class="detail-val">${impLabel(c.importance)}</span></div>
+      <div class="detail-row"><span class="detail-key">연락처</span><span class="detail-val">${c.phone || '—'}</span></div>
+      <div class="detail-row"><span class="detail-key">이메일</span><span class="detail-val">${c.email || '—'}</span></div>
+      <div class="detail-row"><span class="detail-key">접근 방식</span><span class="detail-val">${c.approach || '—'}</span></div>
+      <div class="detail-row"><span class="detail-key">관심사</span><span class="detail-val">${c.interest || '—'}</span></div>
+    </div>
+    ${c.memo ? `<div class="detail-section"><div class="detail-section-title">메모 / 특이사항</div><div class="memo-box">${c.memo}</div></div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">최근 대화 이력</div>
+      <div class="history-mini">
+        ${myLogs.length ? myLogs.map(l => `
+          <div class="history-entry">
+            <div class="h-dot"></div>
+            <div>
+              <div class="h-text">${l.content}</div>
+              <div class="h-date">${l.date} · ${l.type}</div>
+            </div>
+          </div>`).join('') : '<div style="color:var(--text-light);font-size:13px;padding:12px 0">기록이 없습니다</div>'}
+      </div>
+    </div>
+  `;
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  currentDetail = null;
+}
+
+// ─── MODALS ───
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openAddModal() {
+  editId = null;
+  document.getElementById('modal-title').textContent = '연락처 추가';
+  ['f-name','f-role','f-org','f-phone','f-email','f-approach','f-interest','f-memo'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-category').value = '금융당국';
+  document.getElementById('f-importance').value = 'mid';
+  openModal('contact-modal');
+}
+
+function openEditModal(id) {
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  editId = id;
+  document.getElementById('modal-title').textContent = '연락처 수정';
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-role').value = c.role;
+  document.getElementById('f-org').value = c.org;
+  document.getElementById('f-category').value = c.category;
+  document.getElementById('f-phone').value = c.phone || '';
+  document.getElementById('f-email').value = c.email || '';
+  document.getElementById('f-importance').value = c.importance;
+  document.getElementById('f-approach').value = c.approach || '';
+  document.getElementById('f-interest').value = c.interest || '';
+  document.getElementById('f-memo').value = c.memo || '';
+  openModal('contact-modal');
+}
+
+function saveContact() {
+  const name = document.getElementById('f-name').value.trim();
+  const role = document.getElementById('f-role').value.trim();
+  const org = document.getElementById('f-org').value.trim();
+  if (!name || !role || !org) { alert('이름, 직책, 기관은 필수입니다.'); return; }
+  const data = {
+    name, role, org,
+    category: document.getElementById('f-category').value,
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    importance: document.getElementById('f-importance').value,
+    approach: document.getElementById('f-approach').value.trim(),
+    interest: document.getElementById('f-interest').value.trim(),
+    memo: document.getElementById('f-memo').value.trim(),
+  };
+  if (editId) {
+    const idx = contacts.findIndex(c => c.id === editId);
+    contacts[idx] = { ...contacts[idx], ...data };
+  } else {
+    data.id = Date.now();
+    contacts.push(data);
+  }
+  save(); closeModal('contact-modal'); renderContacts();
+  if (editId && currentDetail === editId) openDetail(editId);
+}
+
+function deleteContact(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  contacts = contacts.filter(c => c.id !== id);
+  save(); renderContacts();
+  if (currentDetail === id) closeDetail();
+}
+
+function openLogModal(id) {
+  logTargetId = id;
+  const c = contacts.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('l-name').value = c.name + ' (' + c.org + ')';
+  document.getElementById('l-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('l-type').value = '식사/접대';
+  document.getElementById('l-content').value = '';
+  openModal('log-modal');
+}
+
+function saveLog() {
+  const content = document.getElementById('l-content').value.trim();
+  if (!content) { alert('내용을 입력해주세요.'); return; }
+  logs.push({
+    id: Date.now(),
+    contactId: logTargetId,
+    date: document.getElementById('l-date').value,
+    type: document.getElementById('l-type').value,
+    content,
+  });
+  save(); closeModal('log-modal');
+  renderContacts();
+  if (currentDetail === logTargetId) openDetail(logTargetId);
+}
+
+function deleteLog(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  logs = logs.filter(l => l.id !== id);
+  save(); renderHistory();
+}
+
+function openFollowupModal() {
+  const sel = document.getElementById('fu-contact');
+  sel.innerHTML = '<option value="">선택하세요</option>' + contacts.map(c => `<option value="${c.id}">${c.name} (${c.org})</option>`).join('');
+  document.getElementById('fu-date').value = '';
+  document.getElementById('fu-type').value = '식사 제안';
+  document.getElementById('fu-memo').value = '';
+  openModal('followup-modal');
+}
+
+function saveFollowup() {
+  const cid = parseInt(document.getElementById('fu-contact').value);
+  const date = document.getElementById('fu-date').value;
+  if (!cid || !date) { alert('대상과 예정일을 선택해주세요.'); return; }
+  followups.push({
+    id: Date.now(), contactId: cid, date,
+    type: document.getElementById('fu-type').value,
+    memo: document.getElementById('fu-memo').value.trim(),
+    done: false,
+  });
+  save(); closeModal('followup-modal'); renderFollowup();
+}
+
+function doneFollowup(id) {
+  const f = followups.find(x => x.id === id);
+  if (f) { f.done = true; save(); renderFollowup(); }
+}
+
+function deleteFollowup(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  followups = followups.filter(f => f.id !== id);
+  save(); renderFollowup();
+}
+
+// ─── INIT ───
+renderContacts();
+</script>
+</body>
+</html>
